@@ -27,3 +27,20 @@ class BoardTests(unittest.TestCase):
         self.assertEqual(Board.WHITE, piece)
         print(self.board)
 
+    def test_search_line(self):
+        line = self.board._table[1]
+        result = self.board.search_line(Board.BLACK, line)
+        self.assertFalse(result)
+        line = list('x' * 3)
+        result = self.board.search_line(Board.BLACK, line)
+        self.assertTrue(result)
+
+    def test_search_column(self):
+        line = self.board._table[1]
+        result = self.board.search_line(Board.BLACK, line)
+        self.assertFalse(result)
+        line = list(('.' * 2) + ('x' * 3))
+        result = self.board.search_line(Board.BLACK, line)
+        self.assertTrue(result)
+
+

@@ -1,4 +1,24 @@
 
+class Score:
+    ONE = 1
+    TWO = 20
+    THREE = 50
+    FOUR = 100
+    FIVE = 10000
+
+
+# class Gomoku:
+#     def __init__(self):
+#         self.current_state =
+#
+#
+# class Tree:
+#     def __init__(self, head):
+#         self._parent = None
+#         self._head = head
+#         self._subtree = {}
+
+
 class Board:
     NONE = '.'
     BLACK = 'x'
@@ -34,3 +54,32 @@ class Board:
 
     def play_piece(self, piece, row, col):
         self._table[row][col] = piece
+
+    def victory_match(self, piece):
+        return piece * self._sequency_victory
+
+    def search_line(self, piece, line):
+        match_str = self.victory_match(piece)
+        return match_str in ''.join(line)
+
+
+    # def search_winner(self, piece):
+    #     size = len(self._table)
+    #     for i in range(size):
+    #         for j in
+
+
+# class Human:
+#     human_piece = Board.BLACK
+#
+#     def __init__(self, node):
+
+
+
+
+
+class GomokuState:
+    def __init__(self, value, board):
+        self.board = board
+        self.value = value
+
