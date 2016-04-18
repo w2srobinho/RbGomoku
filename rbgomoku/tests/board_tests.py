@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from view import Board, Piece
+from core.board import Board, Piece
 
 class BoardTests(unittest.TestCase):
     def setUp(self):
