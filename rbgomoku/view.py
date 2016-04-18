@@ -12,9 +12,9 @@ import numpy as np
 #         self._subtree = {}
 class Score:
     ONE = 1
-    TWO = 20
-    THREE = 50
-    FOUR = 100
+    TWO = 10
+    THREE = 100
+    FOUR = 1000
     FIVE = 10000
 
 class Piece:
@@ -31,10 +31,10 @@ class Piece:
 
 
 class Board:
-    """Board representation of the console game
+    """ Board representation of the console game
     """
     def __init__(self, size, sequence_victory):
-        """Start the Board with empty positions
+        """ Start the Board with empty positions
         :param size: size of board sizeXsize format
         :param sequence_victory: number of piece in sequence to see victory
         """
@@ -46,7 +46,7 @@ class Board:
 
 
     def __repr__(self):
-        """Format the boarder
+        """ Format the boarder
         :return: the board in str format
         """
         table_copy = self._table.tolist()
@@ -73,9 +73,17 @@ class Board:
         self._table[row][col] = piece
         # return self.has_winner(piece, row, col)
 
+    @property
+    def winner(self):
+        return self._winner
+
+    @property
+    def table(self):
+        return self._table
+
     def has_winner(self, piece, row, col):
         if self.search_line(piece, row, col):
-            """Faz verificação por linha
+            """ Faz verificação por linha
                 se ocorrer uma vitória na linha atual
                 escreve a peça ganhadora e retorna verdadeiro
             """
@@ -83,21 +91,31 @@ class Board:
             return True
 
         if self.search_column(piece, row, col):
-            """Faz verificação por linha
+            """ Faz verificação por linha
                 se ocorrer uma vitória na linha atual
                 escreve a peça ganhadora e retorna verdadeiro
             """
             self._winner = piece
             return True
 
-        # if self.search_line(piece, row, col):
-            # for j in
-            #
-            #
-            # for j in
+        if self.search_diagonal(piece, row, col):
+            """ Faz verificação da diagonal no sentido da diagonal principal
+                se ocorrer uma vitória na diagonal atual
+                escreve a peça ganhadora e retorna verdadeiro
+            """
+            self._winner = piece
+            return True
+
+        if self.search_opposite_diagonal(piece, row, col):
+            """ Faz verificação da diagonal no sentido da diagonal secundária
+                se ocorrer uma vitória na diagonal atual
+                escreve a peça ganhadora e retorna verdadeiro
+            """
+            self._winner = piece
+            return True
 
     def victory_match(self, piece):
-        """A generator to match victory
+        """ A generator to match victory
 
         :param piece: for check the victory sequence
         :return: the sequence for victory
@@ -105,9 +123,9 @@ class Board:
         return piece * self._sequence_victory
 
     def search_line(self, piece, row, col):
-        """search has victory in line
+        """ Search has victory in line
 
-                check in matrix row if has match value to victory
+                Check in matrix row if has match value to victory
                 it get the previous five column position from current position played and
                 the next five column position from current and check if has victory
 
@@ -118,15 +136,15 @@ class Board:
                     otherwise is False
         """
         match_str = self.victory_match(piece)
-        start_col = 0 if (col - 5) < 0 else (col - 5)
+        start_col = 0 if (col - self._sequence_victory) < 0 else (col - self._sequence_victory)
         size = len(self._table)
-        end_col = size if (col + 5 + 1) > size else (col + 5 + 1)
+        end_col = size if (col + self._sequence_victory + 1) > size else (col + self._sequence_victory + 1)
         return match_str in ''.join(self._table[row][start_col:end_col])
 
     def search_column(self, piece, row, col):
-        """search has victory in line
+        """ Search has victory in line
 
-                check in matrix column if has match value to victory
+                Check in matrix column if has match value to victory
                 it get the previous five row position from current position played and
                 the next five row position from current and check if has victory
 
@@ -137,15 +155,55 @@ class Board:
                     otherwise is False
         """
         match_str = self.victory_match(piece)
-        start_row = 0 if (row - 5) < 0 else (row - 5)
+        start_row = 0 if (row - self._sequence_victory) < 0 else (row - self._sequence_victory)
         size = len(self._table)
-        end_row = size if (row + 5 + 1) > size else (row + 5 + 1)
+        end_row = size if (row + self._sequence_victory + 1) > size else (row + self._sequence_victory + 1)
         return match_str in ''.join(self._table[start_row:end_row, col])
 
-# class Human:
-#     human_piece = Board.BLACK
-#
-#     def __init__(self, node):
+    def search_diagonal(self, piece, row, col):
+        """ Search has victory by diagonal
+
+                Check in matrix the diagonal if has match value to victory
+                it get the previous five diagonal (row x col) position from current position played and
+                the next five diagonal (row x col) position from current and check if has victory
+
+        :param piece: current piece played
+        :param row: position in matrix
+        :param col: position in matrix
+        :return: if has a victory in current diagonal, True
+                    otherwise is False
+        """
+        match_str = self.victory_match(piece)
+        offset = col - row
+        diagonal = np.diagonal(self._table, offset=offset, axis1=0).tolist()
+        diagonal_formatted = ''.join(diagonal)
+
+        return match_str in diagonal_formatted
+
+    def search_opposite_diagonal(self, piece, row, col):
+        """ Search has victory by diagonal
+
+                Check in matrix the diagonal if has match value to victory
+                it get the previous five diagonal (row x col) position from current position played and
+                the next five diagonal (row x col) position from current and check if has victory
+
+        :param piece: current piece played
+        :param row: position in matrix
+        :param col: position in matrix
+        :return: if has a victory in current diagonal, True
+                    otherwise is False
+        """
+        new_col = row
+        size = len(self._table)
+        new_row = (size - 1) - col
+        match_str = self.victory_match(piece)
+        offset = new_col - new_row
+        column_inverted = self._table[:, ::-1]
+        transposed = column_inverted.transpose()
+        diagonal = np.diag(transposed, k=offset).tolist()
+        diagonal_formatted = ''.join(diagonal)
+
+        return match_str in diagonal_formatted
 
 
 
