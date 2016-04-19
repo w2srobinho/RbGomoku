@@ -1,3 +1,4 @@
+from core import OverwritePositionException
 from core.board import Piece
 
 class AIPlayer:
@@ -10,17 +11,21 @@ class AIPlayer:
         self.my_piece = piece
         self.opponent = Piece.WHITE if piece == Piece.BLACK else Piece.BLACK
 
-    # Abstract method to get next move. Return int[2] of {row, col} */
     def play(self, row, col):
         raise NotImplemented
 
 class HumanPlayer(AIPlayer):
     """ Human Player
     """
-    def __init__(self, board, piece):
+    def __init__(self, board, piece, first=True):
         super(HumanPlayer, self).__init__(board, piece)
+        self.first = not first
 
     def play(self, row, col):
-        self._board.play_piece(self.my_piece, row, col)
-        self._board.has_winner(self.my_piece, row, col)
-        return self._board.winner
+        if self._board.get_piece(row, col) != Piece.NONE:
+            raise OverwritePositionException
+        return self._board.play_piece(self.my_piece, row, col)
+
+    def __repr__(self):
+        player_number = int(self.first) + 1
+        return 'Player {}'.format(player_number)
