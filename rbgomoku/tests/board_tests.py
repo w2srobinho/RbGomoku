@@ -54,41 +54,41 @@ class BoardTests(unittest.TestCase):
     def test_search_winner_by_line(self):
         self.print_test(" starting test_search_winner_by_line ")
         result = self.board.has_winner(Piece.BLACK, row=1, col=6)
-        self.assertFalse(result)
+        self.assertNotEqual(Piece.BLACK, result)
         self.board._table[1, 5:10] = 'x'
         result = self.board.has_winner(Piece.BLACK, row=1, col=5)
         print(self.board)
         print()
-        self.assertTrue(result)
+        self.assertEqual(Piece.BLACK, result)
 
     def test_search_winner_by_column(self):
         self.print_test(' starting test_search_winner_by_column ')
         result = self.board.has_winner(Piece.BLACK, row=5, col=1)
-        self.assertFalse(result)
+        self.assertNotEqual(Piece.BLACK, result)
         self.board._table[5:10, 1] = 'x'
         result = self.board.has_winner(Piece.BLACK, row=9, col=1)
         print(self.board)
         print()
-        self.assertTrue(result)
+        self.assertEqual(Piece.BLACK, result)
 
     def test_search_winner_by_diagonal(self):
         self.print_test(' starting test_search_winner_by_diagonal ')
         result = self.board.has_winner(Piece.BLACK, row=9, col=3)
-        self.assertFalse(result)
+        self.assertNotEqual(Piece.BLACK, result)
         subboard = self.board._table[8:13, 2:7]
         subboard[np.diag_indices_from(subboard)] = Piece.BLACK
         result = self.board.has_winner(Piece.BLACK, row=9, col=3)
         print(self.board)
-        self.assertTrue(result)
+        self.assertEqual(Piece.BLACK, result)
 
     def test_search_winner_by_opposite_diagonal(self):
         self.print_test(' starting test_search_winner_by_opposite_diagonal ')
         result = self.board.has_winner(Piece.BLACK, row=9, col=2)
-        self.assertFalse(result)
+        self.assertNotEqual(Piece.BLACK, result)
         subboard = self.board._table[5:10, 2:7]
         subboard = subboard[:, ::-1]
         subboard[np.diag_indices_from(subboard)] = Piece.BLACK
         print(self.board)
         result = self.board.has_winner(Piece.BLACK, row=9, col=2)
         print(self.board)
-        self.assertTrue(result)
+        self.assertEqual(Piece.BLACK, result)
