@@ -28,11 +28,12 @@ class GomokuState:
 
 
 class Score:
+    SIZE = 10
     ONE = 1
-    TWO = 10
-    THREE = 100
-    FOUR = 1000
-    FIVE = 10000
+    TWO = SIZE * ONE
+    THREE = SIZE * TWO
+    FOUR = SIZE * THREE
+    FIVE = SIZE * FOUR
 
 class Piece:
     """Piece representation
