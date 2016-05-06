@@ -1,39 +1,28 @@
-import copy as cp
+import math
 import numpy as np
-
 from core import NotBlankSpaceException
 
-class GomokuState:
-    level_tree = 0
-
-    def __init__(self, board, parent_state):
-        self.level_tree += 1
-        # self.score = parent_state.value + 0
-        self.board = cp.copy(board)
-        self.parent = parent_state
-        self._children = set()
-
-    @property
-    def children(self):
-        return self._children
-
-    def add_child(self, child_state):
-        self._children.add(child_state)
-
-    def add_children_states(self, children_state):
-        self._children.update(children_state)
-
-    def is_leaf(self):
-        return len(self.children) == 0
+FACTOR = 100
 
 
-class Score:
-    SIZE = 10
-    ONE = 1
-    TWO = SIZE * ONE
-    THREE = SIZE * TWO
-    FOUR = SIZE * THREE
-    FIVE = SIZE * FOUR
+class ScoreEnum:
+    NONE = 0,
+    ONE = 1,
+    TWO = 2,
+    THREE = 3,
+    FOUR = 4,
+    FIVE = 5
+
+
+SCORE_POINT = [
+    0,
+    1,
+    100,
+    10000,
+    1000000,
+    50000000000
+]
+
 
 class Piece:
     """Piece representation
@@ -48,27 +37,38 @@ class Piece:
     WHITE = 'o'
 
 
+class BoardSpace:
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+
+
 class Board:
     """ Board representation of the console game
     """
+
     def __init__(self, size, sequence_victory):
         """ Start the Board with empty positions
         :param size: size of board sizeXsize format
         :param sequence_victory: number of piece in sequence to see victory
         """
+        self.size = size
+        self.score = 0
         self._table = np.chararray((size, size))
         self._table[:] = Piece.NONE
         self._table = self._table.astype(np.str)
         self._sequence_victory = sequence_victory
 
+    def __len__(self):
+        return self.size
 
     def __repr__(self):
         """ Format the boarder
         :return: the board in str format
         """
         table_copy = self._table.tolist()
-        formatter = ' '.join(['{' + str(i) + ':^2}' for i in range(len(table_copy) + 1)])
-        range_table = range(len(table_copy))
+        formatter = ' '.join(['{' + str(i) + ':^2}' for i in range(self.size + 1)])
+        range_table = range(self.size)
         idx_table = list(range_table)
 
         ## top index table ##
@@ -83,20 +83,19 @@ class Board:
         str_table = '\n'.join([top_idx_f] + left_idx_table_f)
         return str_table
 
-    def get_piece(self, row, col):
-        return self._table[row, col]
+    def get_piece(self, board_space):
+        return self._table[board_space.row, board_space.col]
 
-    def play_piece(self, piece, row, col):
+    def take_up_space(self, piece, board_space):
         """ Current movement in border
 
         :param piece: the piece played
-        :param row: the row position
-        :param col: the column position
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: the winner or Piece.NONE if no there winner
         """
-        self._table[row, col] = piece
-        winner = self.has_winner(piece, row, col)
-        if (self._table == '.').sum() == 0 and winner == Piece.NONE:
+        self._table[board_space.row, board_space.col] = piece
+        winner = self.has_winner(piece, board_space)
+        if self._table.count(Piece.NONE).sum() == 0 and winner == Piece.NONE:
             raise NotBlankSpaceException
         return winner
 
@@ -104,36 +103,39 @@ class Board:
     def table(self):
         return self._table
 
-    def has_winner(self, piece, row, col):
+    @property
+    def current_score(self):
+        return self.score
+
+    def has_winner(self, piece, board_space):
         """ Search for winner play in border
 
         :param piece: represent current piece played
-        :param row: the row position
-        :param col: the column position
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: the current winner if there or Piece.NONE if no there winner
         """
-        if self._search_line(piece, row, col):
+        if self._search_line(piece, board_space):
             """ Faz verificação por linha
                 se ocorrer uma vitória na linha atual
                 escreve a peça ganhadora e retorna verdadeiro
             """
             return piece
 
-        if self._search_column(piece, row, col):
+        if self._search_column(piece, board_space):
             """ Faz verificação por linha
                 se ocorrer uma vitória na linha atual
                 escreve a peça ganhadora e retorna verdadeiro
             """
             return piece
 
-        if self._search_diagonal(piece, row, col):
+        if self._search_diagonal(piece, board_space):
             """ Faz verificação da diagonal no sentido da diagonal principal
                 se ocorrer uma vitória na diagonal atual
                 escreve a peça ganhadora e retorna verdadeiro
             """
             return piece
 
-        if self._search_opposite_diagonal(piece, row, col):
+        if self._search_opposite_diagonal(piece, board_space):
             """ Faz verificação da diagonal no sentido da diagonal secundária
                 se ocorrer uma vitória na diagonal atual
                 escreve a peça ganhadora e retorna verdadeiro
@@ -142,15 +144,18 @@ class Board:
 
         return Piece.NONE
 
-    def _victory_match(self, piece):
-        """ A generator to match victory
+    def heuristic_move_score(self, piece, line, move_position):
+        score_factor = 1 if piece == Piece.BLACK else -1
+        line = ''.join(line)
+        for i in range(self._sequence_victory, 0, -1):
+            """ A generator to match sequence to search score
+            """
+            match = piece * i
+            if match in line:
+                self.score += (score_factor * SCORE_POINT[i])
+                return
 
-        :param piece: for check the victory sequence
-        :return: the sequence for victory
-        """
-        return piece * self._sequence_victory
-
-    def _search_line(self, piece, row, col):
+    def _search_line(self, piece, board_space):
         """ Search has victory in line
 
                 Check in matrix row if has match value to victory
@@ -158,18 +163,19 @@ class Board:
                 the next five column position from current and check if has victory
 
         :param piece: current piece played
-        :param row: position in matrix
-        :param col: position in matrix
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: if has a victory in current line, True
                     otherwise is False
         """
-        match_str = self._victory_match(piece)
-        start_col = 0 if (col - self._sequence_victory) < 0 else (col - self._sequence_victory)
-        size = len(self._table)
-        end_col = size if (col + self._sequence_victory + 1) > size else (col + self._sequence_victory + 1)
-        return match_str in ''.join(self._table[row, start_col:end_col])
 
-    def _search_column(self, piece, row, col):
+        start_col = 0 if (board_space.col - self._sequence_victory) < 0 else (board_space.col - self._sequence_victory)
+        end_col = self.size if (board_space.col + self._sequence_victory + 1) > self.size \
+                            else (board_space.col + self._sequence_victory)
+        sequence = self._table[board_space.row, start_col:end_col]
+        self.heuristic_move_score(piece, sequence, board_space.col)
+        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
+
+    def _search_column(self, piece, board_space):
         """ Search has victory in line
 
                 Check in matrix column if has match value to victory
@@ -177,18 +183,18 @@ class Board:
                 the next five row position from current and check if has victory
 
         :param piece: current piece played
-        :param row: position in matrix
-        :param col: position in matrix
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: if has a victory in current row, True
                     otherwise is False
         """
-        match_str = self._victory_match(piece)
-        start_row = 0 if (row - self._sequence_victory) < 0 else (row - self._sequence_victory)
-        size = len(self._table)
-        end_row = size if (row + self._sequence_victory + 1) > size else (row + self._sequence_victory + 1)
-        return match_str in ''.join(self._table[start_row:end_row, col])
+        start_row = 0 if (board_space.row - self._sequence_victory) < 0 else (board_space.row - self._sequence_victory)
+        end_row = self.size if (board_space.row + self._sequence_victory + 1) > self.size \
+                            else (board_space.row + self._sequence_victory)
+        sequence = self._table[start_row:end_row, board_space.col]
+        self.heuristic_move_score(piece, sequence, board_space.row)
+        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
 
-    def _search_diagonal(self, piece, row, col):
+    def _search_diagonal(self, piece, board_space):
         """ Search has victory by diagonal
 
                 Check in matrix the diagonal if has match value to victory
@@ -196,19 +202,17 @@ class Board:
                 the next five diagonal (row x col) position from current and check if has victory
 
         :param piece: current piece played
-        :param row: position in matrix
-        :param col: position in matrix
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: if has a victory in current diagonal, True
                     otherwise is False
         """
-        match_str = self._victory_match(piece)
-        offset = col - row
+        offset = board_space.col - board_space.row
         diagonal = np.diag(self._table, k=offset).tolist()
-        diagonal_formatted = ''.join(diagonal)
+        position = board_space.row + offset if offset < 0 else board_space.col - offset
+        self.heuristic_move_score(piece, diagonal, move_position=position)
+        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
 
-        return match_str in diagonal_formatted
-
-    def _search_opposite_diagonal(self, piece, row, col):
+    def _search_opposite_diagonal(self, piece, board_space):
         """ Search has victory by diagonal
 
                 Check in matrix the diagonal if has match value to victory
@@ -216,19 +220,16 @@ class Board:
                 the next five diagonal (row x col) position from current and check if has victory
 
         :param piece: current piece played
-        :param row: position in matrix
-        :param col: position in matrix
+        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: if has a victory in current diagonal, True
                     otherwise is False
         """
-        new_col = row
-        size = len(self._table)
-        new_row = (size - 1) - col
-        match_str = self._victory_match(piece)
+        new_col = board_space.row
+        new_row = (self.size - 1) - board_space.col
         offset = new_col - new_row
         column_inverted = self._table[:, ::-1]
         transposed = column_inverted.transpose()
         diagonal = np.diag(transposed, k=offset).tolist()
-        diagonal_formatted = ''.join(diagonal)
-
-        return match_str in diagonal_formatted
+        position = board_space.row + offset if offset < 0 else board_space.col - offset
+        self.heuristic_move_score(piece, diagonal, move_position=position)
+        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
