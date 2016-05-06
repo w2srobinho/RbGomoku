@@ -42,6 +42,9 @@ class BoardSpace:
         self.row = row
         self.col = col
 
+    def __eq__(self, other):
+        return self.row == other.row and self.col == other.col
+
 
 class Board:
     """ Board representation of the console game
@@ -61,6 +64,13 @@ class Board:
 
     def __len__(self):
         return self.size
+
+    def __eq__(self, other):
+        size_equals = self.size == len(other)
+        sequence_victory_equals = self._sequence_victory == other._sequence_victory
+        score_equals = self.score == other.current_score
+        table_equals = np.array_equal(self._table, other.table)
+        return size_equals and sequence_victory_equals and score_equals and table_equals
 
     def __repr__(self):
         """ Format the boarder
@@ -98,6 +108,10 @@ class Board:
         if self._table.count(Piece.NONE).sum() == 0 and winner == Piece.NONE:
             raise NotBlankSpaceException
         return winner
+
+    def restore_move(self, board_space, score):
+        self._table[board_space.row, board_space.col] = Piece.NONE
+        self.score = score
 
     @property
     def table(self):
@@ -144,7 +158,7 @@ class Board:
 
         return Piece.NONE
 
-    def heuristic_move_score(self, piece, line, move_position):
+    def heuristic_move_score(self, piece, line):
         score_factor = 1 if piece == Piece.BLACK else -1
         line = ''.join(line)
         for i in range(self._sequence_victory, 0, -1):
@@ -172,7 +186,7 @@ class Board:
         end_col = self.size if (board_space.col + self._sequence_victory + 1) > self.size \
                             else (board_space.col + self._sequence_victory)
         sequence = self._table[board_space.row, start_col:end_col]
-        self.heuristic_move_score(piece, sequence, board_space.col)
+        self.heuristic_move_score(piece, sequence)
         return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
 
     def _search_column(self, piece, board_space):
@@ -191,7 +205,7 @@ class Board:
         end_row = self.size if (board_space.row + self._sequence_victory + 1) > self.size \
                             else (board_space.row + self._sequence_victory)
         sequence = self._table[start_row:end_row, board_space.col]
-        self.heuristic_move_score(piece, sequence, board_space.row)
+        self.heuristic_move_score(piece, sequence)
         return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
 
     def _search_diagonal(self, piece, board_space):
@@ -208,8 +222,11 @@ class Board:
         """
         offset = board_space.col - board_space.row
         diagonal = np.diag(self._table, k=offset).tolist()
-        position = board_space.row + offset if offset < 0 else board_space.col - offset
-        self.heuristic_move_score(piece, diagonal, move_position=position)
+
+        if len(diagonal) < self._sequence_victory:
+            return False
+
+        self.heuristic_move_score(piece, diagonal)
         return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
 
     def _search_opposite_diagonal(self, piece, board_space):
@@ -230,6 +247,9 @@ class Board:
         column_inverted = self._table[:, ::-1]
         transposed = column_inverted.transpose()
         diagonal = np.diag(transposed, k=offset).tolist()
-        position = board_space.row + offset if offset < 0 else board_space.col - offset
-        self.heuristic_move_score(piece, diagonal, move_position=position)
+
+        if len(diagonal) < self._sequence_victory:
+            return False
+
+        self.heuristic_move_score(piece, diagonal)
         return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
