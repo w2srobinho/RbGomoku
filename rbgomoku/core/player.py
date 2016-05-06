@@ -81,31 +81,6 @@ class MachinePlayer(AIPlayer):
         return (best_score, best_movement)
 
 
-
-
-             #    // Try this move for the current "player"
-             #    cells[move[0]][move[1]].content = player;
-             #    if (player == mySeed) {  // mySeed (computer) is maximizing player
-             #       currentScore = minimax(depth - 1, oppSeed)[0];
-             #       if (currentScore > bestScore) {
-             #          bestScore = currentScore;
-             #          bestRow = move[0];
-             #          bestCol = move[1];
-             #       }
-             #    } else {  // oppSeed is minimizing player
-             #       currentScore = minimax(depth - 1, mySeed)[0];
-             #       if (currentScore < bestScore) {
-             #          bestScore = currentScore;
-             #          bestRow = move[0];
-             #          bestCol = move[1];
-             #       }
-             #    }
-             #    // Undo move
-             #    cells[move[0]][move[1]].content = Seed.EMPTY;
-             # }
-
-
-
     """
         minimax(level, player, alpha, beta)  // player may be "computer" or "opponent"
         if (gameover || level == 0)
@@ -129,39 +104,44 @@ class MachinePlayer(AIPlayer):
         // Initial call with alpha=-inf and beta=inf
         minimax(2, computer, -inf, +inf)
     """
-    # def minimax(self, level, piece, alpha, beta):
-    #     children = None
-    #     possible_palys = self.search_plays()
-    #
-    #     for play in possible_palys:
-    #         self._board.take_up_space(piece, play)
-    #
-    #         """
-    #         cells[move[0]][move[1]].content = player;
-    #         if (player == mySeed) {  // mySeed (computer) is maximizing player
-    #            score = minimax(depth - 1, oppSeed, alpha, beta)[0];
-    #            if (score > alpha) {
-    #               alpha = score;
-    #               bestRow = move[0];
-    #               bestCol = move[1];
-    #            }
-    #         } else {  // oppSeed is minimizing player
-    #            score = minimax(depth - 1, mySeed, alpha, beta)[0];
-    #            if (score < beta) {
-    #               beta = score;
-    #               bestRow = move[0];
-    #               bestCol = move[1];
-    #            }
-    #         }
-    #         """
-    #
-    # def search_plays(self):
-    #     empty_moves = []
-    #     size = len(self._board[0])
-    #     for row in range(size):
-    #         for col in range(size):
-    #             if self._board[row, col] == Piece.NONE:
-    #                 empty_moves.append(BoardSpace(row, col))
+    def minimax_pruning(self, level):
+        infinite = sys.maxsize
+        return self._minimax_pruning(level, self.my_piece, -infinite, infinite)
+
+    def _minimax_pruning(self, level, player, alpha, beta):
+        score = 0
+        best_movement = BoardSpace(-1, -1)
+
+        if level == 0:
+            return (self._board.current_score, best_movement)
+
+        for row in range(len(self._board)):
+            for col in range(len(self._board)):
+                current_movement = BoardSpace(row, col)
+                if self._board.get_piece(current_movement) != Piece.NONE:
+                    continue
+
+                previous_score = self._board.current_score
+                self._board.take_up_space(player, current_movement)
+
+                if player == self.my_piece: # me
+                    score, _ = self._minimax_pruning(level - 1, self.opponent, alpha, beta)
+                    if score > alpha:
+                        alpha = score
+                        best_movement = current_movement
+                else: # opponent
+                    score, _ = self._minimax_pruning(level - 1, self.my_piece, alpha, beta)
+                    if score < beta:
+                        beta = score
+                        best_movement = current_movement
+                # undo move
+                self._board.restore_move(current_movement, previous_score)
+
+                if (alpha >= beta):
+                    break
+
+        score_return = alpha if player == self.my_piece else beta
+        return (score_return, best_movement)
 
 
     def __repr__(self):
