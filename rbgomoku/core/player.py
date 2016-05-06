@@ -1,7 +1,7 @@
 import sys
 
 from core.board import Square, Piece
-from core.exceptions import OverwritePositionException
+from core.exceptions import NotSquareInformedException, OverwritePositionException
 
 class AIPlayer:
     """ Abstract AI players.
@@ -25,8 +25,16 @@ class HumanPlayer(AIPlayer):
         self.first = not first
 
     def play(self, square=None):
+        """ Move the piece of player
+        :param square: is the position to move
+        :return: winner piece if has one, Piece.None otherwise
+        """
+        if not square:
+            raise NotSquareInformedException
+
         if self._board.get_piece(square) != Piece.NONE:
             raise OverwritePositionException
+
         return self._board.take_up_space(self.my_piece, square)
 
     def __repr__(self):
@@ -37,19 +45,44 @@ class HumanPlayer(AIPlayer):
 class MachinePlayer(AIPlayer):
     """ Machine Player
     """
-    def __init__(self, board, piece):
+    def __init__(self, board, piece, level=2):
+        self.first_move = True
+        self.level = level
         super(MachinePlayer, self).__init__(board, piece)
 
     def play(self, square=None):
+        """ Move the piece of player
+        :param square: is the position to move, in this case not used
+        :return: winner piece if has one, Piece.None otherwise
+        """
+        if self.first_move:
+            self.first_move = False
+            middle = int(len(self._board) / 2)
+            square = Square(middle, middle)
+            if self._board.get_piece(square) != Piece.NONE:
+                square = Square(middle - 1, middle - 1)
+            return self._board.take_up_space(self.my_piece, square)
 
+        _, square = self.minimax_pruning(self.level)
         if self._board.get_piece(square) != Piece.NONE:
             raise OverwritePositionException
         return self._board.take_up_space(self.my_piece, square)
 
     def minimax(self, level):
+        """ The simple form MiniMax algorithm
+        :param level: level to down in the tree
+        :return: tuple(score, position) score is the best score found, and
+                                        position is the best move
+        """
         return self._minimax(level, self.my_piece)
 
     def _minimax(self, level, player):
+        """ The simple form MiniMax algorithm
+        :param level: level to down in the tree
+        :param player: current player
+        :return: tuple(score, position) score is the best score found, and
+                                        position is the best move
+        """
         current_score = 0
         best_movement = Square(-1, -1)
         best_score = -sys.maxsize if (player == self.my_piece) else sys.maxsize
@@ -82,10 +115,23 @@ class MachinePlayer(AIPlayer):
         return (best_score, best_movement)
 
     def minimax_pruning(self, level):
+        """ MiniMax algorithm with alpha and beta pruning
+        :param level: level to down in the tree
+        :return: tuple(score, position) score is the best score found, and
+                                        position is the best move
+        """
         infinite = sys.maxsize
         return self._minimax_pruning(level, self.my_piece, -infinite, infinite)
 
     def _minimax_pruning(self, level, player, alpha, beta):
+        """ MiniMax algorithm with alpha and beta pruning
+        :param level: level to down in the tree
+        :param player: current player
+        :param alpha: alpha score
+        :param beta: beta score
+        :return: tuple(score, position) score is the best score found, and
+                                        position is the best move
+        """
         score = 0
         best_movement = Square(-1, -1)
 

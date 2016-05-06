@@ -1,7 +1,7 @@
 import re
-from core import NotBlankSpaceException, OverwritePositionException
-from core.board import Board, Piece
-from core.player import HumanPlayer
+from core.board import Board, Square, Piece
+from core.exceptions import NotBlankSpaceException, OverwritePositionException
+from core.player import HumanPlayer, MachinePlayer
 
 
 def print_formatted(s):
@@ -10,10 +10,25 @@ def print_formatted(s):
 class Gomoku:
     def __init__(self, board_size, sequence_victory):
         self.board = Board(board_size, sequence_victory)
-        self.p1 = HumanPlayer(self.board, Piece.BLACK)
+        self.p1 = self.select_player()
         self.p2 = HumanPlayer(self.board, Piece.WHITE, first=False)
         self.current_player = self.p1
         self.print_board()
+
+    def select_player(self):
+        print('Who would like to play?\n\n')
+
+        while True:
+            a = input('The Human Player (1)\nThe Machine Player (2)\nQuit (q)\n\n')
+
+            if a == '1':
+                return HumanPlayer(self.board, Piece.BLACK)
+            if a == '2':
+                return MachinePlayer(self.board, Piece.BLACK)
+            if a == 'q':
+                print('Bye Bye!')
+                exit(0)
+
 
     def print_board(self):
         print(self.board)
@@ -22,23 +37,27 @@ class Gomoku:
     def run(self):
         running = True
         while running:
-            move = input(
-                '[{}] Enter with position [row,col] or "q" to quit game: '.format(self.current_player))
-            print()
+            square = None
+            if not isinstance(self.current_player, MachinePlayer):
+                move = input(
+                    '[{}] Enter with position [row,col] or "q" to quit game: '.format(self.current_player))
+                print()
 
-            if 'q' in move:
-                print_formatted(' Quit game ')
-                running = False
+                if 'q' in move:
+                    print_formatted(' Quit game ')
+                    running = False
 
-            row, col = re.findall('(\d+)', move)
-            row, col = int(row), int(col)
-            last_index = len(self.board.table) - 1
-            if (row > last_index) or (col > last_index):
-                print('Is permitted only row and col between 0 and {}\n\n'.format(last_index))
-                continue
+                row, col = re.findall('(\d+)', move)
+                square = Square(int(row), int(col))
+                last_index = len(self.board.table) - 1
+                if (square.row > last_index) or (square.col > last_index):
+                    print('Is permitted only row and col between 0 and {}\n\n'.format(last_index))
+                    continue
 
+            winner = Piece.NONE
             try:
-                winner = self.current_player.play(row, col)
+                print('Wait move...')
+                winner = self.current_player.play(square)
             except OverwritePositionException:
                 print("Position not allowed!!\n\n")
                 continue
