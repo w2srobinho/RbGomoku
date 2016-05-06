@@ -1,7 +1,7 @@
 import sys
 
-from core import OverwritePositionException
-from core.board import BoardSpace, Piece
+from core.board import Square, Piece
+from core.exceptions import OverwritePositionException
 
 class AIPlayer:
     """ Abstract AI players.
@@ -13,7 +13,7 @@ class AIPlayer:
         self.my_piece = piece
         self.opponent = Piece.WHITE if piece == Piece.BLACK else Piece.BLACK
 
-    def play(self, board_space):
+    def play(self, square=None):
         raise NotImplemented
 
 
@@ -24,10 +24,10 @@ class HumanPlayer(AIPlayer):
         super(HumanPlayer, self).__init__(board, piece)
         self.first = not first
 
-    def play(self, board_space):
-        if self._board.get_piece(board_space) != Piece.NONE:
+    def play(self, square=None):
+        if self._board.get_piece(square) != Piece.NONE:
             raise OverwritePositionException
-        return self._board.take_up_space(self.my_piece, board_space)
+        return self._board.take_up_space(self.my_piece, square)
 
     def __repr__(self):
         player_number = int(self.first) + 1
@@ -40,17 +40,18 @@ class MachinePlayer(AIPlayer):
     def __init__(self, board, piece):
         super(MachinePlayer, self).__init__(board, piece)
 
-    def play(self, board_space):
-        if self._board.get_piece(board_space) != Piece.NONE:
+    def play(self, square=None):
+
+        if self._board.get_piece(square) != Piece.NONE:
             raise OverwritePositionException
-        return self._board.take_up_space(self.my_piece, board_space)
+        return self._board.take_up_space(self.my_piece, square)
 
     def minimax(self, level):
         return self._minimax(level, self.my_piece)
 
     def _minimax(self, level, player):
         current_score = 0
-        best_movement = BoardSpace(-1, -1)
+        best_movement = Square(-1, -1)
         best_score = -sys.maxsize if (player == self.my_piece) else sys.maxsize
 
         if level == 0:
@@ -58,7 +59,7 @@ class MachinePlayer(AIPlayer):
 
         for row in range(len(self._board)):
             for col in range(len(self._board)):
-                current_movement = BoardSpace(row, col)
+                current_movement = Square(row, col)
                 if self._board.get_piece(current_movement) != Piece.NONE:
                     continue
 
@@ -80,44 +81,20 @@ class MachinePlayer(AIPlayer):
 
         return (best_score, best_movement)
 
-
-    """
-        minimax(level, player, alpha, beta)  // player may be "computer" or "opponent"
-        if (gameover || level == 0)
-           return score
-        children = all valid moves for this "player"
-        if (player is computer, i.e., max's turn)
-           // Find max and store in alpha
-           for each child
-              score = minimax(level - 1, opponent, alpha, beta)
-              if (score > alpha) alpha = score
-              if (alpha >= beta) break;  // beta cut-off
-           return alpha
-        else (player is opponent, i.e., min's turn)
-           // Find min and store in beta
-           for each child
-              score = minimax(level - 1, computer, alpha, beta)
-              if (score < beta) beta = score
-              if (alpha >= beta) break;  // alpha cut-off
-           return beta
-
-        // Initial call with alpha=-inf and beta=inf
-        minimax(2, computer, -inf, +inf)
-    """
     def minimax_pruning(self, level):
         infinite = sys.maxsize
         return self._minimax_pruning(level, self.my_piece, -infinite, infinite)
 
     def _minimax_pruning(self, level, player, alpha, beta):
         score = 0
-        best_movement = BoardSpace(-1, -1)
+        best_movement = Square(-1, -1)
 
         if level == 0:
             return (self._board.current_score, best_movement)
 
         for row in range(len(self._board)):
             for col in range(len(self._board)):
-                current_movement = BoardSpace(row, col)
+                current_movement = Square(row, col)
                 if self._board.get_piece(current_movement) != Piece.NONE:
                     continue
 

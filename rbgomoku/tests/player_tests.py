@@ -1,7 +1,7 @@
 import copy as cp
 import unittest
 
-from core.board import Board, BoardSpace, Piece
+from core.board import Board, Square, Piece
 from core.player import HumanPlayer, MachinePlayer
 
 class PlayerTests(unittest.TestCase):
@@ -10,9 +10,9 @@ class PlayerTests(unittest.TestCase):
 
     def test_playing(self):
         player = HumanPlayer(self.board, Piece.WHITE)
-        board_space = BoardSpace(row=7, col=7)
-        player.play(board_space)
-        piece = self.board.get_piece(board_space)
+        square = Square(row=7, col=7)
+        player.play(square)
+        piece = self.board.get_piece(square)
         self.assertEqual(Piece.WHITE, piece)
 
     def test_minimax(self):
@@ -21,7 +21,7 @@ class PlayerTests(unittest.TestCase):
 
         expected_board = cp.deepcopy(self.board)
         expected_score = 999999
-        expected_movement = BoardSpace(1, 4)
+        expected_movement = Square(1, 4)
 
         current_score, current_movement = player.minimax(2)
 
@@ -35,7 +35,7 @@ class PlayerTests(unittest.TestCase):
 
         expected_board = cp.deepcopy(self.board)
         expected_score = 999999
-        expected_movement = BoardSpace(1, 4)
+        expected_movement = Square(1, 4)
 
         current_score, current_movement = player.minimax_pruning(2)
 

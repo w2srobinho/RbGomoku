@@ -1,48 +1,24 @@
 import math
 import numpy as np
-from core import NotBlankSpaceException
+from core import Piece, ScoreEnum, SCORE_POINT
+from core.exceptions import NotBlankSpaceException
 
-FACTOR = 100
-
-
-class ScoreEnum:
-    NONE = 0,
-    ONE = 1,
-    TWO = 2,
-    THREE = 3,
-    FOUR = 4,
-    FIVE = 5
-
-
-SCORE_POINT = [
-    0,
-    1,
-    100,
-    10000,
-    1000000,
-    50000000000
-]
-
-
-class Piece:
-    """Piece representation
+class Square:
+    """ This is the abstraction of position in border
     """
-    """Indicate the position in board does not played yet"""
-    NONE = '.'
-
-    """Indicate a BLACK piece for game"""
-    BLACK = 'x'
-
-    """Indicate a WHITE piece for game"""
-    WHITE = 'o'
-
-
-class BoardSpace:
     def __init__(self, row, col):
+        """ The position
+        :param row: is the row number in border
+        :param col: is the column number in border
+        """
         self.row = row
         self.col = col
 
     def __eq__(self, other):
+        """ Compare the positions
+        :param other: The position to compare
+        :return: True if equals, False otherwise
+        """
         return self.row == other.row and self.col == other.col
 
 
@@ -63,9 +39,16 @@ class Board:
         self._sequence_victory = sequence_victory
 
     def __len__(self):
+        """
+        :return: length of border
+        """
         return self.size
 
     def __eq__(self, other):
+        """ Compare borders
+        :param other:
+        :return:
+        """
         size_equals = self.size == len(other)
         sequence_victory_equals = self._sequence_victory == other._sequence_victory
         score_equals = self.score == other.current_score
