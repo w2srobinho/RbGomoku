@@ -111,20 +111,6 @@ class Board:
         :param board_space: is a position played in matrix ex. BoardSpace(row, col)
         :return: the current winner if there or Piece.NONE if no there winner
         """
-        if self._search_line(piece, board_space):
-            """ Faz verificação por linha
-                se ocorrer uma vitória na linha atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
-        if self._search_column(piece, board_space):
-            """ Faz verificação por linha
-                se ocorrer uma vitória na linha atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
         if self._search_diagonal(piece, board_space):
             """ Faz verificação da diagonal no sentido da diagonal principal
                 se ocorrer uma vitória na diagonal atual
@@ -139,17 +125,34 @@ class Board:
             """
             return piece
 
+        if self._search_line(piece, board_space):
+            """ Faz verificação por linha
+                se ocorrer uma vitória na linha atual
+                escreve a peça ganhadora e retorna verdadeiro
+            """
+            return piece
+
+        if self._search_column(piece, board_space):
+            """ Faz verificação por linha
+                se ocorrer uma vitória na linha atual
+                escreve a peça ganhadora e retorna verdadeiro
+            """
+            return piece
+
         return Piece.NONE
 
     def heuristic_move_score(self, piece, line):
         score_factor = 1 if piece == Piece.BLACK else -1
+        opponent = Piece.WHITE if piece == Piece.BLACK else Piece.BLACK
         line = ''.join(line)
         for i in range(self._sequence_victory, 0, -1):
             """ A generator to match sequence to search score
             """
             match = piece * i
             if match in line:
-                self.score += (score_factor * SCORE_POINT[i])
+                bad_move = opponent + match + opponent
+                if bad_move not in line:
+                    self.score += (score_factor * SCORE_POINT[i])
                 return
 
     def _search_line(self, piece, board_space):
