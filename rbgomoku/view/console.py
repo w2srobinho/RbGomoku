@@ -66,6 +66,7 @@ class Gomoku:
                 running = False
 
             self.print_board()
+            print('Score: {}'.format(self.board.current_score))
 
             if winner != Piece.NONE:
                 print_formatted(' Congratulations!!! ')

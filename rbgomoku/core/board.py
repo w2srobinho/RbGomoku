@@ -142,6 +142,14 @@ class Board:
         return Piece.NONE
 
     def heuristic_move_score(self, piece, line):
+        """ Calculate the current move
+
+                 Calculate the score of current move in line list
+                 This calc is done searching from maximum point until minimum point
+
+        :param piece: current piece to calculate score
+        :param line: list to calcilate
+        """
         score_factor = 1 if piece == Piece.BLACK else -1
         opponent = Piece.WHITE if piece == Piece.BLACK else Piece.BLACK
         line = ''.join(line)
