@@ -1,7 +1,7 @@
-import math
 import numpy as np
-from core import Piece, ScoreEnum, SCORE_POINT
+from core import Piece
 from core.exceptions import NotBlankSpaceException
+from core.score import Score
 
 class Square:
     """ This is the abstraction of position in border
@@ -32,11 +32,10 @@ class Board:
         :param sequence_victory: number of piece in sequence to see victory
         """
         self.size = size
-        self.score = 0
         self._table = np.chararray((size, size))
         self._table[:] = Piece.NONE
         self._table = self._table.astype(np.str)
-        self._sequence_victory = sequence_victory
+        self.score = Score(self._table)
 
     def __len__(self):
         """
@@ -87,7 +86,7 @@ class Board:
         :return: the winner or Piece.NONE if no there winner
         """
         self._table[board_space.row, board_space.col] = piece
-        winner = self.has_winner(piece, board_space)
+        winner = self.score.has_winner(piece, board_space)
         if self._table.count(Piece.NONE).sum() == 0 and winner == Piece.NONE:
             raise NotBlankSpaceException
         return winner
@@ -103,147 +102,3 @@ class Board:
     @property
     def current_score(self):
         return self.score
-
-    def has_winner(self, piece, board_space):
-        """ Search for winner play in border
-
-        :param piece: represent current piece played
-        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
-        :return: the current winner if there or Piece.NONE if no there winner
-        """
-        if self._search_diagonal(piece, board_space):
-            """ Faz verificação da diagonal no sentido da diagonal principal
-                se ocorrer uma vitória na diagonal atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
-        if self._search_opposite_diagonal(piece, board_space):
-            """ Faz verificação da diagonal no sentido da diagonal secundária
-                se ocorrer uma vitória na diagonal atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
-        if self._search_line(piece, board_space):
-            """ Faz verificação por linha
-                se ocorrer uma vitória na linha atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
-        if self._search_column(piece, board_space):
-            """ Faz verificação por linha
-                se ocorrer uma vitória na linha atual
-                escreve a peça ganhadora e retorna verdadeiro
-            """
-            return piece
-
-        return Piece.NONE
-
-    def heuristic_move_score(self, piece, line):
-        """ Calculate the current move
-
-                 Calculate the score of current move in line list
-                 This calc is done searching from maximum point until minimum point
-
-        :param piece: current piece to calculate score
-        :param line: list to calcilate
-        """
-        score_factor = 1 if piece == Piece.BLACK else -1
-        opponent = Piece.WHITE if piece == Piece.BLACK else Piece.BLACK
-        line = ''.join(line)
-        for i in range(self._sequence_victory, 0, -1):
-            """ A generator to match sequence to search score
-            """
-            match = piece * i
-            if match in line:
-                bad_move = opponent + match + opponent
-                if bad_move not in line:
-                    self.score += (score_factor * SCORE_POINT[i])
-                return
-
-    def _search_line(self, piece, board_space):
-        """ Search has victory in line
-
-                Check in matrix row if has match value to victory
-                it get the previous five column position from current position played and
-                the next five column position from current and check if has victory
-
-        :param piece: current piece played
-        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
-        :return: if has a victory in current line, True
-                    otherwise is False
-        """
-
-        start_col = 0 if (board_space.col - self._sequence_victory) < 0 else (board_space.col - self._sequence_victory)
-        end_col = self.size if (board_space.col + self._sequence_victory + 1) > self.size \
-                            else (board_space.col + self._sequence_victory)
-        sequence = self._table[board_space.row, start_col:end_col]
-        self.heuristic_move_score(piece, sequence)
-        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
-
-    def _search_column(self, piece, board_space):
-        """ Search has victory in line
-
-                Check in matrix column if has match value to victory
-                it get the previous five row position from current position played and
-                the next five row position from current and check if has victory
-
-        :param piece: current piece played
-        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
-        :return: if has a victory in current row, True
-                    otherwise is False
-        """
-        start_row = 0 if (board_space.row - self._sequence_victory) < 0 else (board_space.row - self._sequence_victory)
-        end_row = self.size if (board_space.row + self._sequence_victory + 1) > self.size \
-                            else (board_space.row + self._sequence_victory)
-        sequence = self._table[start_row:end_row, board_space.col]
-        self.heuristic_move_score(piece, sequence)
-        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
-
-    def _search_diagonal(self, piece, board_space):
-        """ Search has victory by diagonal
-
-                Check in matrix the diagonal if has match value to victory
-                it get the previous five diagonal (row x col) position from current position played and
-                the next five diagonal (row x col) position from current and check if has victory
-
-        :param piece: current piece played
-        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
-        :return: if has a victory in current diagonal, True
-                    otherwise is False
-        """
-        offset = board_space.col - board_space.row
-        diagonal = np.diag(self._table, k=offset).tolist()
-
-        if len(diagonal) < self._sequence_victory:
-            return False
-
-        self.heuristic_move_score(piece, diagonal)
-        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
-
-    def _search_opposite_diagonal(self, piece, board_space):
-        """ Search has victory by diagonal
-
-                Check in matrix the diagonal if has match value to victory
-                it get the previous five diagonal (row x col) position from current position played and
-                the next five diagonal (row x col) position from current and check if has victory
-
-        :param piece: current piece played
-        :param board_space: is a position played in matrix ex. BoardSpace(row, col)
-        :return: if has a victory in current diagonal, True
-                    otherwise is False
-        """
-        new_col = board_space.row
-        new_row = (self.size - 1) - board_space.col
-        offset = new_col - new_row
-        column_inverted = self._table[:, ::-1]
-        transposed = column_inverted.transpose()
-        diagonal = np.diag(transposed, k=offset).tolist()
-
-        if len(diagonal) < self._sequence_victory:
-            return False
-
-        self.heuristic_move_score(piece, diagonal)
-        return math.fabs(self.score) >= SCORE_POINT[ScoreEnum.FIVE]
