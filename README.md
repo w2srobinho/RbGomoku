@@ -9,7 +9,7 @@ RbGomoku
 ### Create environment
 1. create virtualenv `$ pyvenv env`
 2. run `$ source env/bin/activate`
-3. run `$ pip install -r requerements.txt`
+3. run `$ pip install -r requirements.txt`
 
 ### Playing
 run `$ python main`
