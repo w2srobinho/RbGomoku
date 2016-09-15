@@ -1,11 +1,11 @@
 import unittest
 
-import numpy as np
 from core.board import Board, Square, Piece
+
 
 class BoardTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15, sequence_victory=5)
+        self.board = Board(size=15)
 
     def print_test(self, s):
         print("{0:#^50}".format(s))

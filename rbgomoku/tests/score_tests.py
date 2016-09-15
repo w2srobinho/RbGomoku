@@ -13,7 +13,7 @@ def print_test_name(s):
 
 class ScoreTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15, sequence_victory=5)
+        self.board = Board(size=15)
         self.score = Score(self.board.table)
 
     def test_search_winner_by_line(self):
@@ -65,16 +65,46 @@ class ScoreTests(unittest.TestCase):
         result = self.score.has_winner(Piece.BLACK, square)
         self.assertEqual(Piece.BLACK, result)
 
-    def test_heuristic_4_sequence_pieces(self):
-        print_test_name(' heuristic_4_sequence_pieces ')
-        range = self.board.table[8:12, 2:6]
-        range[np.diag_indices_from(range)] = Piece.BLACK
-        diag = utils.get_diagonal(self.board.table, -6)
+    def test_heuristic_4_sequence_with_outmost_opened(self):
+        """ ..xxxx.. """
+        print_test_name(' test_heuristic_4_sequence_with_outmost_opened ')
+        self.board.table[8, 3:7] = Piece.BLACK
+        line = self.board.table[8, 1:9]
+        current_score_value = self.score.heuristic(Piece.BLACK, line)
+        expected_score = SCORE_POINT[ScoreEnum.FOUR] * 2
+        self.assertEqual(expected_score, current_score_value)
 
-        self.score.heuristic_move_score(Piece.BLACK, diag)
-        self.assertEqual(SCORE_POINT[ScoreEnum.FOUR], self.score.score)
+    def test_heuristic_4_sequence_with_1_outmost_opened(self):
+        """ .oxxxx.. """
+        print_test_name(' test_heuristic_4_sequence_with_1_outmost_opened ')
+        self.board.table[8, 3:7] = Piece.BLACK
+        self.board.table[8, 2] = Piece.WHITE
+        line = self.board.table[8, 1:9]
+        current_score_value = self.score.heuristic(Piece.BLACK, line)
+        expected_score = SCORE_POINT[ScoreEnum.FOUR]
+        self.assertEqual(expected_score, current_score_value)
+
+    def test_heuristic_4_sequence_with_1_outmost_closed(self):
+        """ .oxxxxo. """
+        print_test_name(' test_heuristic_4_sequence_with_1_outmost_closed ')
+        self.board.table[8, 3:7] = Piece.BLACK
+        self.board.table[8, 2] = Piece.WHITE
+        self.board.table[8, 7] = Piece.WHITE
+        line = self.board.table[8, 1:9]
+        current_score_value = self.score.heuristic(Piece.BLACK, line)
+        expected_score = 0
+        self.assertEqual(expected_score, current_score_value)
+
+    def test_heuristic_3_blank_1(self):
+        """ ..xxx.x.. """
+        print_test_name(' test_heuristic_3_blank_1 ')
+        self.board.table[8, 3:6] = Piece.BLACK
+        self.board.table[8, 7] = Piece.BLACK
         print(self.board)
-        print()
+        line = self.board.table[8, 1:9]
+        current_value = self.score.heuristic(Piece.BLACK, line)
+        expected_value = SCORE_POINT[ScoreEnum.FOUR]
+        self.assertEqual(expected_value, current_value)
 
 
 

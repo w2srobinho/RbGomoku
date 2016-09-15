@@ -6,7 +6,7 @@ from core.player import HumanPlayer, MachinePlayer
 
 class PlayerTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15, sequence_victory=5)
+        self.board = Board(size=15)
 
     def test_playing(self):
         player = HumanPlayer(self.board, Piece.WHITE)
@@ -20,7 +20,7 @@ class PlayerTests(unittest.TestCase):
         self.board._table[1, 5:8] = Piece.BLACK
 
         expected_board = cp.deepcopy(self.board)
-        expected_score = 999999
+        expected_score = 2000000
         expected_movement = Square(1, 4)
 
         current_score, current_movement = player.minimax(2)
@@ -33,8 +33,10 @@ class PlayerTests(unittest.TestCase):
         player = MachinePlayer(self.board, Piece.BLACK)
         self.board._table[1, 5:8] = Piece.BLACK
 
+        print(self.board)
+
         expected_board = cp.deepcopy(self.board)
-        expected_score = 999999
+        expected_score = 2000000
         expected_movement = Square(1, 4)
 
         current_score, current_movement = player.minimax_pruning(2)

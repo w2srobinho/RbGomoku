@@ -26,10 +26,9 @@ class Board:
     """ Board representation of the console game
     """
 
-    def __init__(self, size, sequence_victory):
+    def __init__(self, size):
         """ Start the Board with empty positions
         :param size: size of board sizeXsize format
-        :param sequence_victory: number of piece in sequence to see victory
         """
         self.size = size
         self._table = np.chararray((size, size))
@@ -49,10 +48,9 @@ class Board:
         :return:
         """
         size_equals = self.size == len(other)
-        sequence_victory_equals = self._sequence_victory == other._sequence_victory
-        score_equals = self.score == other.current_score
+        score_equals = self.score.value == other.current_score
         table_equals = np.array_equal(self._table, other.table)
-        return size_equals and sequence_victory_equals and score_equals and table_equals
+        return size_equals and score_equals and table_equals
 
     def __repr__(self):
         """ Format the boarder
@@ -93,7 +91,7 @@ class Board:
 
     def restore_move(self, board_space, score):
         self._table[board_space.row, board_space.col] = Piece.NONE
-        self.score = score
+        self.score.value = score
 
     @property
     def table(self):
@@ -101,4 +99,4 @@ class Board:
 
     @property
     def current_score(self):
-        return self.score
+        return self.score.value
