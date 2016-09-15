@@ -8,8 +8,8 @@ def print_formatted(s):
     print("{0:#^50}".format(s))
 
 class Gomoku:
-    def __init__(self, board_size, sequence_victory):
-        self.board = Board(board_size, sequence_victory)
+    def __init__(self, board_size):
+        self.board = Board(board_size)
         self.p1 = self.select_player()
         self.p2 = HumanPlayer(self.board, Piece.WHITE, first=False)
         self.current_player = self.p1
@@ -45,7 +45,7 @@ class Gomoku:
 
                 if 'q' in move:
                     print_formatted(' Quit game ')
-                    running = False
+                    exit(0)
 
                 row, col = re.findall('(\d+)', move)
                 square = Square(int(row), int(col))

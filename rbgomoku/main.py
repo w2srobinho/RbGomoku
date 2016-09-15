@@ -4,7 +4,6 @@ from view import console as c
 from view.console import Gomoku
 
 BOARD_SIZE = 15
-SEQUENCE_VICTORY = 5
 
 
 def main():
@@ -19,7 +18,7 @@ def main():
     c.print_formatted(' Let\'s start ')
     print('\n\n')
 
-    gomoku = Gomoku(BOARD_SIZE, SEQUENCE_VICTORY)
+    gomoku = Gomoku(BOARD_SIZE)
     gomoku.run()
 
 
