@@ -25,13 +25,13 @@ class Square:
 class Board:
     """ Board representation of the console game
     """
+    SIZE = 15
 
-    def __init__(self, size):
+    def __init__(self):
         """ Start the Board with empty positions
         :param size: size of board sizeXsize format
         """
-        self.size = size
-        self._table = np.chararray((size, size))
+        self._table = np.chararray((self.SIZE, self.SIZE))
         self._table[:] = Piece.NONE
         self._table = self._table.astype(np.str)
         self.score = Score(self._table)
@@ -40,14 +40,14 @@ class Board:
         """
         :return: length of border
         """
-        return self.size
+        return self.SIZE
 
     def __eq__(self, other):
         """ Compare borders
         :param other:
         :return:
         """
-        size_equals = self.size == len(other)
+        size_equals = self.SIZE == len(other)
         score_equals = self.score.value == other.current_score
         table_equals = np.array_equal(self._table, other.table)
         return size_equals and score_equals and table_equals
@@ -57,8 +57,9 @@ class Board:
         :return: the board in str format
         """
         table_copy = self._table.tolist()
-        formatter = ' '.join(['{' + str(i) + ':^2}' for i in range(self.size + 1)])
-        range_table = range(self.size)
+
+        formatter = ' '.join(['{' + str(i) + ':^2}' for i in range(self.SIZE + 1)])
+        range_table = range(self.SIZE)
         idx_table = list(range_table)
 
         ## top index table ##

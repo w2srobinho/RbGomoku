@@ -13,7 +13,7 @@ def print_test_name(s):
 
 class ScoreTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15)
+        self.board = Board()
         self.score = Score(self.board.table)
 
     def test_search_winner_by_line(self):

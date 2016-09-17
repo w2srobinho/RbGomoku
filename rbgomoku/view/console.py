@@ -8,8 +8,8 @@ def print_formatted(s):
     print("{0:#^50}".format(s))
 
 class Gomoku:
-    def __init__(self, board_size):
-        self.board = Board(board_size)
+    def __init__(self):
+        self.board = Board()
         self.p1 = self.select_player()
         self.p2 = HumanPlayer(self.board, Piece.WHITE, first=False)
         self.current_player = self.p1

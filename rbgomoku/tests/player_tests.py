@@ -6,7 +6,7 @@ from core.player import HumanPlayer, MachinePlayer
 
 class PlayerTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15)
+        self.board = Board()
 
     def test_playing(self):
         player = HumanPlayer(self.board, Piece.WHITE)

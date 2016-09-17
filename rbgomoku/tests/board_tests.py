@@ -5,7 +5,7 @@ from core.board import Board, Square, Piece
 
 class BoardTests(unittest.TestCase):
     def setUp(self):
-        self.board = Board(size=15)
+        self.board = Board()
 
     def print_test(self, s):
         print("{0:#^50}".format(s))
