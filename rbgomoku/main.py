@@ -14,8 +14,8 @@ def main():
     #                     help='table size NxN, MIN=3 and MAX=19')
     # args = parser.parse_args()
 
-    c.print_formatted(' The RbGomoku game is console based. ')
-    c.print_formatted(' Let\'s start ')
+    print(c.str_format(' The RbGomoku game is console based. '))
+    print(c.str_format(' Let\'s start '))
     print('\n\n')
 
     gomoku = Gomoku(BOARD_SIZE)
