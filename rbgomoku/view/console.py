@@ -36,8 +36,7 @@ class Gomoku:
         print('\n')
 
     def run(self):
-        running = True
-        while running:
+        while True:
             square = None
             if not isinstance(self.current_player, MachinePlayer):
                 move = input(
@@ -68,7 +67,7 @@ class Gomoku:
                 continue
             except NotBlankSpaceException:
                 print(str_format(' There was no winner!!! '))
-                running = False
+                exit(-1)
 
             self.print_board()
             current_play_str = Format.BOLD + \
@@ -81,6 +80,6 @@ class Gomoku:
                 print_winner = lambda s: print(Format.Color.BLUE + s + Format.END)
                 print_winner(' Congratulations!!! ')
                 print_winner(' {} is Winner! '.format(self.current_player))
-                running = False
+                exit(0)
 
             self.current_player = self.p2 if self.current_player == self.p1 else self.p1
