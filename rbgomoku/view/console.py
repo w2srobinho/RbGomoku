@@ -9,12 +9,13 @@ def str_format(s):
     return "{0:#^50}".format(s)
 
 class Gomoku:
-    def __init__(self):
+    def __init__(self, level):
         self.board = Board()
         self.p1 = self.select_player()
         self.p2 = HumanPlayer(self.board, Piece.WHITE, first=False)
         self.current_player = self.p1
         self.print_board()
+        self.level = level
 
     def select_player(self):
         print('Who would like to play?\n\n')
