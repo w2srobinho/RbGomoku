@@ -7,11 +7,7 @@ class BoardTests(unittest.TestCase):
     def setUp(self):
         self.board = Board()
 
-    def print_test(self, s):
-        print("{0:#^50}".format(s))
-
     def test_board_of_table(self):
-        self.print_test(" starting test_board_of_table ")
         expected_table = '   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14\n' \
                          '0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . \n' \
                          '1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . \n' \
@@ -33,13 +29,11 @@ class BoardTests(unittest.TestCase):
         self.assertEqual(expected_table, str(self.board))
 
     def test_get_piece(self):
-        self.print_test(" starting test_get_piece ")
         piece = self.board.get_piece(Square(1, 1))
         print()
         self.assertEqual(Piece.NONE, piece)
 
     def test_play_piece(self):
-        self.print_test(" starting test_play_piece ")
         square = Square(1, 1)
         piece = self.board.get_piece(square)
         self.assertEqual(Piece.NONE, piece)
