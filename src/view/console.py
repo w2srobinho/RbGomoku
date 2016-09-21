@@ -27,7 +27,7 @@ class Gomoku:
                 return HumanPlayer(self.board, Piece.BLACK)
             if a == '2':
                 print('Player 1 selected as The Machine!\n')
-                return MachinePlayer(self.board, Piece.BLACK)
+                return MachinePlayer(self.board, Piece.BLACK, self.level)
             if a == 'q':
                 print('Bye Bye!')
                 exit(0)

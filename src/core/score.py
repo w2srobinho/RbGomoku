@@ -92,7 +92,7 @@ class Score:
                 if (end < len(line) and line[end] == Piece.NONE):  # end is the last position + 1
                     outmost += 1
                 self.value += SCORE_POINT[i] * outmost * score_factor
-                return
+                return self.value
             elif i == ScoreEnum.FOUR:
                 pattern = '(x{3}\.x|x\.x{3})|(x{2}\.x{2})'
                 match = re.search(pattern, line)
@@ -104,8 +104,8 @@ class Score:
                 if (end < len(line) and line[end] == Piece.NONE):  # end is the last position + 1
                     outmost += 1
                 self.value += SCORE_POINT[i] * outmost * score_factor / 2
-                return
-        return
+                return self.value
+        return 1
 
     def _search_winner_line(self, piece, board_space):
         """ Search has victory in line

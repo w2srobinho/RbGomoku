@@ -6,18 +6,12 @@ from core import Piece, utils
 from core.board import Board, Square
 from core.score import Score, ScoreEnum, SCORE_POINT
 
-
-def print_test_name(s):
-    print("{0:#^50}".format(s))
-
-
 class ScoreTests(unittest.TestCase):
     def setUp(self):
         self.board = Board()
         self.score = Score(self.board.table)
 
     def test_search_winner_by_line(self):
-        print_test_name(" starting test_search_winner_by_line ")
         square = Square(1, 6)
         result = self.score.has_winner(Piece.BLACK, square)
         self.assertNotEqual(Piece.BLACK, result)
@@ -29,7 +23,6 @@ class ScoreTests(unittest.TestCase):
         self.assertEqual(Piece.BLACK, result)
 
     def test_search_winner_by_column(self):
-        print_test_name(' starting test_search_winner_by_column ')
         square = Square(5, 1)
         result = self.score.has_winner(Piece.WHITE, square)
         self.assertNotEqual(Piece.WHITE, result)
@@ -41,7 +34,6 @@ class ScoreTests(unittest.TestCase):
         self.assertEqual(Piece.WHITE, result)
 
     def test_search_winner_by_diagonal(self):
-        print_test_name(' starting test_search_winner_by_diagonal ')
         square = Square(9, 3)
         result = self.score.has_winner(Piece.BLACK, square)
         self.assertNotEqual(Piece.BLACK, result)
@@ -53,7 +45,6 @@ class ScoreTests(unittest.TestCase):
         self.assertEqual(Piece.BLACK, result)
 
     def test_search_winner_by_opposite_diagonal(self):
-        print_test_name(' starting test_search_winner_by_opposite_diagonal ')
         square = Square(9, 2)
         result = self.score.has_winner(Piece.BLACK, square)
         self.assertNotEqual(Piece.BLACK, result)
@@ -67,7 +58,6 @@ class ScoreTests(unittest.TestCase):
 
     def test_heuristic_4_sequence_with_outmost_opened(self):
         """ ..xxxx.. """
-        print_test_name(' test_heuristic_4_sequence_with_outmost_opened ')
         self.board.table[8, 3:7] = Piece.BLACK
         line = self.board.table[8, 1:9]
         current_score_value = self.score.heuristic(Piece.BLACK, line)
@@ -76,7 +66,6 @@ class ScoreTests(unittest.TestCase):
 
     def test_heuristic_4_sequence_with_1_outmost_opened(self):
         """ .oxxxx.. """
-        print_test_name(' test_heuristic_4_sequence_with_1_outmost_opened ')
         self.board.table[8, 3:7] = Piece.BLACK
         self.board.table[8, 2] = Piece.WHITE
         line = self.board.table[8, 1:9]
@@ -86,7 +75,6 @@ class ScoreTests(unittest.TestCase):
 
     def test_heuristic_4_sequence_with_1_outmost_closed(self):
         """ .oxxxxo. """
-        print_test_name(' test_heuristic_4_sequence_with_1_outmost_closed ')
         self.board.table[8, 3:7] = Piece.BLACK
         self.board.table[8, 2] = Piece.WHITE
         self.board.table[8, 7] = Piece.WHITE
@@ -97,7 +85,6 @@ class ScoreTests(unittest.TestCase):
 
     def test_heuristic_3_blank_1(self):
         """ ..xxx.x.. """
-        print_test_name(' test_heuristic_3_blank_1 ')
         self.board.table[8, 3:6] = Piece.BLACK
         self.board.table[8, 7] = Piece.BLACK
         print(self.board)
