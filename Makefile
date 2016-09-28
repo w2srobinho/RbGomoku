@@ -1,4 +1,4 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: install run clean
 
 GOMOKU_HOME = $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 RUNNER = $(GOMOKU_HOME)/src/run.py
@@ -15,7 +15,7 @@ clean:
 	@rm -rf .eggs/ dist/ rbgomoku.egg-info/ src/rbgomoku.egg-info/
 
 install:
-	@python setup.py install --record unisntall.txt
+	@python setup.py install
 
 test:
 	@python setup.py test

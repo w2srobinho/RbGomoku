@@ -10,12 +10,12 @@ def str_format(s):
 
 class Gomoku:
     def __init__(self, level):
+        self.level = level
         self.board = Board()
         self.p1 = self.select_player()
         self.p2 = HumanPlayer(self.board, Piece.WHITE, first=False)
         self.current_player = self.select_starter()
         self.print_board()
-        self.level = level
 
     def select_player(self):
         print('Who would like to play?\n\n')
